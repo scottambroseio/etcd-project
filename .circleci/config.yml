@@ -3,8 +3,14 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.10
+      - image: quay.io/coreos/etcd:v3.3.5
+        entrypoint: /usr/local/bin/etcd
+        command: [--listen-client-urls, 'http://0.0.0.0:2379', --advertise-client-urls, 'http://0.0.0.0:2379']
     working_directory: /go/src/github.com/scottrangerio/etcd-project
     steps:
       - checkout
-      - run: go get -v -t -d ./...
+      - run:
+          name: Waiting for etcd
+          # hack until I figure it waiting for container
+          command: sleep 10
       - run: go test -v ./...
