@@ -5,12 +5,20 @@ import "github.com/coreos/etcd/clientv3"
 import "os"
 import "time"
 import "context"
+import "strings"
 
-func TestCanConnectToETCD(t *testing.T) {
-	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{os.Getenv("ETCD")},
+func createClient() (*clientv3.Client, error) {
+	cluster := os.Getenv("ETCD_CLUSTER")
+	split := strings.Split(cluster, "|")
+
+	return clientv3.New(clientv3.Config{
+		Endpoints:   split,
 		DialTimeout: 2 * time.Second,
 	})
+}
+
+func TestCanConnectToETCD(t *testing.T) {
+	client, err := createClient()
 
 	if err != nil {
 		t.Fatal(err)
@@ -20,10 +28,7 @@ func TestCanConnectToETCD(t *testing.T) {
 }
 
 func TestCanCreateKey(t *testing.T) {
-	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{os.Getenv("ETCD")},
-		DialTimeout: 2 * time.Second,
-	})
+	client, err := createClient()
 
 	if err != nil {
 		t.Fatal(err)
@@ -36,5 +41,4 @@ func TestCanCreateKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 }
